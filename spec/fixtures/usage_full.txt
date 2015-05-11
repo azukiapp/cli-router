@@ -1,0 +1,16 @@
+Cli Router help
+
+Usage:
+  azk stop [<system>] [-v]... [options] [-l]
+  azk start [<system>] [--reprovision --rebuild --open] [-v]... [options] [-l]
+  azk scale [<system>] [<to>] [-v]... [options] [-l]
+  azk vm (ssh|remove|stop) [-v]... [options] [-- <ssh-options>...] [-l]
+  azk [help | -h | --help]
+  azk --version
+
+Options:
+  -h, --help     Show this screen.
+  --version      Show version.
+  -v, --verbose  Verbose mode [default: false].
+  -q, --quiet    Quiet mode.
+  --log, -l      Sets a log level
