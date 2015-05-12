@@ -1,4 +1,4 @@
-import { Route, match } from 'i40';
+import Router from 'i40';
 
 var R    = require('ramda');
 var path = require('path');
@@ -8,7 +8,7 @@ export class CliRouter {
     route_regex = route_regex || '/:controller/:action?';
     this.controllers_root = controllers_root || './';
 
-    var rule = Route(route_regex, 0);
+    var rule = Router.Route(route_regex, 0);
 
     this.route_rules      = [ rule ];
     this.routes           = [];
@@ -16,7 +16,7 @@ export class CliRouter {
   }
 
   add(pathname, controller, startAt) {
-    var route = match(this.route_rules, pathname, startAt);
+    var route = Router.match(this.route_rules, pathname, startAt);
 
     if (route) {
       var controller_name = route.params.controller;
@@ -43,7 +43,7 @@ export class CliRouter {
   }
 
   match(pathname, startAt) {
-    var params = match(this.route_rules, pathname, startAt);
+    var params = Router.match(this.route_rules, pathname, startAt);
     return params;
   }
 
@@ -100,17 +100,27 @@ export class CliRouter {
     return cmds;
   }
 
+  cleanArgs(old_args) {
+    var args = {};
+    for (var key in old_args) {
+      var value = old_args[key];
+      // https://regex101.com/r/fM4pO5/1
+      key = key.replace(/^(?:[--]{2}(.))|^<|>$/gm, '$1');
+      args[key] = value;
+    }
+    return args;
+  }
+
   run(args, opts) {
     var cmds = this.exatractCommads(args);
 
     if (!R.isNil(cmds) && !R.isEmpty(cmds)) {
-      var url    = `/${cmds.join('/')}/`;
-      var params = this.match(url).params;
-      var route  = this.findRouteByParams(params);
-      var fn     = this.getFn(route, params, opts);
+      var match = this.match(`/${cmds.join('/')}/`).params;
+      var route = this.findRouteByParams(match);
+      var fn    = this.getFn(route, match, opts);
 
       if (R.is(Function, fn)) {
-        return fn(args);
+        return fn(this.cleanArgs(args));
       }
     }
   }
