@@ -6,7 +6,7 @@ var path = require('path');
 
 describe('CliRouter module', function() {
   var controllers_root = h.fixture_require_path('controllers');
-  var cwd = process.env.AZK_CURRENT_SYSTEM || process.cwd();
+  var cwd = process.cwd();
 
   it('shoud ordered src of routes', function() {
     var cli_router = new CliRouter(controllers_root)
