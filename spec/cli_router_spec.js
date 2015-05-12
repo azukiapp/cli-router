@@ -116,6 +116,20 @@ describe('CliRouter module', function() {
       var result = cli_router.run(options, cwd);
       h.expect(result).to.eql('agent no start');
     });
+
+    it('should run `system start` with function', function() {
+      var options = R.merge(should_options, {
+        system: true,
+        start: true,
+      });
+      var cli_router = new CliRouter(controllers_root)
+        .add('/system')
+        .add('/system/start', () => 'system start')
+        .add('/start', () => 'start');
+
+      var result = cli_router.run(options, cwd);
+      h.expect(result).to.eql('system start');
+    });
   });
 
 });

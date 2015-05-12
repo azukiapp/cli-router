@@ -10,14 +10,20 @@ export class CliRouter {
 
     var rule = Route(route_regex, 0);
 
-    this.route_rules   = [ rule ];
-    this.routes        = [];
+    this.route_rules      = [ rule ];
+    this.routes           = [];
+    this.controller_names = [];
   }
 
   add(pathname, controller, startAt) {
     var route = match(this.route_rules, pathname, startAt);
 
     if (route) {
+      var controller_name = route.params.controller;
+      if (!R.isNil(controller_name) && !R.contains(controller_name)(this.controller_names)) {
+        this.controller_names.push(controller_name);
+      }
+
       controller = controller || pathname;
 
       if (typeof controller === 'string') {
@@ -78,8 +84,21 @@ export class CliRouter {
     return fn;
   }
 
+  exatractCommads(opts) {
+    var cmds = [];
+    for (var i = 0; i < this.controller_names.length; i++) {
+      var controller_name = this.controller_names[i];
+      if (opts.hasOwnProperty(controller_name) && !!opts[controller_name]) {
+        cmds.push(controller_name);
+      }
+    }
+    cmds = R.uniq(R.concat(cmds, (R.invert(opts).true || [])));
+
+    return cmds;
+  }
+
   run(opts, cwd) {
-    var cmds   = R.invert(opts).true;
+    var cmds = this.exatractCommads(opts);
 
     if (!R.isNil(cmds) && !R.isEmpty(cmds)) {
       var url    = `/${cmds.join('/')}/`;
