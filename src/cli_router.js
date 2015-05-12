@@ -27,7 +27,7 @@ export class CliRouter {
       controller = controller || pathname;
 
       if (typeof controller === 'string') {
-        route.Controller = this.loadController(pathname, controller);
+        route.Controller = controller;
       } else if (typeof controller === 'function') {
         route.fn = controller;
       } else {
@@ -48,7 +48,7 @@ export class CliRouter {
   }
 
   loadController(pathname) {
-    try { return require(path.join(this.controllers_root, pathname)); } catch (e) { }
+    return require(path.join(this.controllers_root, pathname));
   }
 
   findRoute(controller, action) {
@@ -76,8 +76,11 @@ export class CliRouter {
     var fn;
 
     if (route.hasOwnProperty('Controller')) {
+      if (R.is(String, route.Controller)) {
+        route.Controller = this.loadController(route.Controller);
+      }
       var controller = new route.Controller(opts);
-      fn = controller[params.action] || controller.index;
+      fn = !R.isNil(params.action) ? controller[params.action] : controller.index;
     } else if (route.hasOwnProperty('fn')) {
       fn = route.fn;
     }
