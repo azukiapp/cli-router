@@ -23,7 +23,7 @@ export class CliRouter {
       if (typeof controller === 'string') {
         route.Controller = this.loadController(pathname, controller);
       } else if (typeof controller === 'function') {
-        route.fn = controller
+        route.fn = controller;
       } else {
         throw new Error(' route ' + pathname.toString() + ' requires a `controller`');
       }
@@ -73,20 +73,23 @@ export class CliRouter {
       var controller = new route.Controller(opts);
       fn = controller[params.action] || controller.index;
     } else if (route.hasOwnProperty('fn')) {
-      fn = route.fn
+      fn = route.fn;
     }
     return fn;
   }
 
   run(opts, cwd) {
     var cmds   = R.invert(opts).true;
-    var url    = `/${cmds.join('/')}/`;
-    var params = this.match(url).params;
-    var route  = this.findRouteByParams(params);
-    var fn     = this.getFn(route, params);
 
-    if (R.is(Function, fn)) {
-      return fn(opts);
+    if (!R.isNil(cmds) && !R.isEmpty(cmds)) {
+      var url    = `/${cmds.join('/')}/`;
+      var params = this.match(url).params;
+      var route  = this.findRouteByParams(params);
+      var fn     = this.getFn(route, params);
+
+      if (R.is(Function, fn)) {
+        return fn(opts, cwd);
+      }
     }
   }
 }

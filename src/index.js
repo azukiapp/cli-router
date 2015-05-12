@@ -45,11 +45,15 @@ export class Cli {
     return this.router.routes;
   }
 
-  run(opts) {
+  run(opts, cwd) {
     if (Array.isArray(opts) || typeof opts === 'string') {
       opts = { argv: opts };
     }
     var result = this.docopt(opts);
+
+    if (typeof result !== 'string') {
+      result = this.router.run(result, cwd);
+    }
 
     return result;
   }
