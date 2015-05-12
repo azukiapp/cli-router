@@ -1,6 +1,6 @@
-import { Controller } from '../controllers';
+import { CliController } from '../../../src/cli_controller';
 
-class Agent extends Controller {
+class Agent extends CliController {
   constructor(...args) {
     super(...args);
   }
@@ -9,8 +9,8 @@ class Agent extends Controller {
     return 'agent';
   }
 
-  start(opts={}) {
-    var system = opts['<system>'];
+  start(params={}) {
+    var system = params['<system>'];
     return `agent start ${system}`;
   }
 

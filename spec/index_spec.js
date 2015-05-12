@@ -13,9 +13,11 @@ class TestCli extends Cli {
 }
 
 describe('Cli module', function() {
-  var cwd = process.cwd();
   var cli_options = {
     controllers_root: h.fixture_require_path('controllers')
+  };
+  var controller_opts = {
+    cwd: process.cwd()
   };
 
   describe('simple usage', function () {
@@ -89,7 +91,7 @@ describe('Cli module', function() {
         .route('/agent');
 
       doc_opts.argv = ['agent', 'start'];
-      var result  = cli.run(doc_opts, cwd);
+      var result  = cli.run(doc_opts, controller_opts);
 
       h.expect(cli.routes[0].params).to.eql({ controller: 'agent', action: undefined });
       h.expect(result).to.eql('agent start null');

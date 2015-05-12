@@ -84,30 +84,30 @@ export class CliRouter {
     return fn;
   }
 
-  exatractCommads(opts) {
+  exatractCommads(args) {
     var cmds = [];
     for (var i = 0; i < this.controller_names.length; i++) {
       var controller_name = this.controller_names[i];
-      if (opts.hasOwnProperty(controller_name) && !!opts[controller_name]) {
+      if (args.hasOwnProperty(controller_name) && !!args[controller_name]) {
         cmds.push(controller_name);
       }
     }
-    cmds = R.uniq(R.concat(cmds, (R.invert(opts).true || [])));
+    cmds = R.uniq(R.concat(cmds, (R.invert(args).true || [])));
 
     return cmds;
   }
 
-  run(opts, cwd) {
-    var cmds = this.exatractCommads(opts);
+  run(args, opts) {
+    var cmds = this.exatractCommads(args);
 
     if (!R.isNil(cmds) && !R.isEmpty(cmds)) {
       var url    = `/${cmds.join('/')}/`;
       var params = this.match(url).params;
       var route  = this.findRouteByParams(params);
-      var fn     = this.getFn(route, params);
+      var fn     = this.getFn(route, params, opts);
 
       if (R.is(Function, fn)) {
-        return fn(opts, cwd);
+        return fn(args);
       }
     }
   }

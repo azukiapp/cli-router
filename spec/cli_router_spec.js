@@ -6,7 +6,9 @@ var path = require('path');
 
 describe('CliRouter module', function() {
   var controllers_root = h.fixture_require_path('controllers');
-  var cwd = process.cwd();
+  var controller_opts = {
+    cwd: process.cwd()
+  };
 
   it('shoud ordered src of routes', function() {
     var cli_router = new CliRouter(controllers_root)
@@ -98,7 +100,7 @@ describe('CliRouter module', function() {
         .add('/agent')
         .add('/start', () => 'start');
 
-      var result = cli_router.run(options, cwd);
+      var result = cli_router.run(options, controller_opts);
 
       h.expect(result).to.eql('agent start demo');
     });
@@ -113,7 +115,7 @@ describe('CliRouter module', function() {
         .add('/agent/start', () => 'agent no start')
         .add('/start', () => 'start');
 
-      var result = cli_router.run(options, cwd);
+      var result = cli_router.run(options, controller_opts);
       h.expect(result).to.eql('agent no start');
     });
 
@@ -127,7 +129,7 @@ describe('CliRouter module', function() {
         .add('/system/start', () => 'system start')
         .add('/start', () => 'start');
 
-      var result = cli_router.run(options, cwd);
+      var result = cli_router.run(options, controller_opts);
       h.expect(result).to.eql('system start');
     });
   });
