@@ -1,52 +1,92 @@
-import { Route } from 'i40';
+import { Route, match } from 'i40';
 
+var R    = require('ramda');
 var path = require('path');
 
 export class CliRouter {
-  constructor(controllers_root) {
+  constructor(controllers_root, route_regex) {
+    route_regex = route_regex || '/:controller/:action?';
     this.controllers_root = controllers_root || './';
-    this.routes          = [];
-    this.routeMap        = [];
+
+    var rule = Route(route_regex, 0);
+
+    this.route_rules   = [ rule ];
+    this.routes        = [];
   }
 
-  add(path, controller) {
-    if (!path) { throw new Error(' route requires a path'); }
+  add(pathname, controller, startAt) {
+    var route = match(this.route_rules, pathname, startAt);
 
-    var route = Route(path, this.routeMap.length);
-    route.Controller = this.getController(path, controller);
+    if (route) {
+      controller = controller || pathname;
 
-    this.routes.push(route);
-    this.routeMap.push([path, route.Controller]);
+      if (typeof controller === 'string') {
+        route.Controller = this.loadController(pathname, controller);
+      } else if (typeof controller === 'function') {
+        route.fn = controller
+      } else {
+        throw new Error(' route ' + pathname.toString() + ' requires a `controller`');
+      }
 
+      this.routes.push(route);
+    } else {
+      throw new Error(' invalid route ' + pathname.toString());
+
+    }
     return this;
   }
 
-  getController(route_path, controller) {
-    controller = controller || route_path;
+  match(pathname, startAt) {
+    var params = match(this.route_rules, pathname, startAt);
+    return params;
+  }
 
-    if (typeof controller === 'string') {
-      controller = this.loadController(route_path);
-    } else if (typeof controller !== 'function') {
-      controller = null;
+  loadController(pathname) {
+    try { return require(path.join(this.controllers_root, pathname)); } catch (e) { }
+  }
+
+  findRoute(controller, action) {
+    var routes = [];
+    for (var i = 0; i < this.routes.length; i++) {
+      if (this.routes[i].params.controller == controller &&
+        this.routes[i].params.action == action ) {
+        routes.push(this.routes[i]);
+      }
+    }
+    return R.last(routes);
+  }
+
+  findRouteByParams(params) {
+    var route = this.findRoute(params.controller, params.action);
+    if (!route) {
+      route = this.findRoute(params.controller);
     }
 
-    if (!controller) { throw new Error(' route ' + route_path.toString() + ' requires a `controller`'); }
-
-    return controller;
+    return route;
   }
 
-  controllerPath(route_path) {
-    return path.join(this.controllers_root, route_path);
-  }
+  getFn(route, params, opts) {
+    if (!R.is(Object, route) || !R.is(Object, params)) { return; }
+    var fn;
 
-  loadController(route_path) {
-    route_path = this.controllerPath(route_path);
-
-    try { return require(route_path); } catch (e) { }
+    if (route.hasOwnProperty('Controller')) {
+      var controller = new route.Controller(opts);
+      fn = controller[params.action] || controller.index;
+    } else if (route.hasOwnProperty('fn')) {
+      fn = route.fn
+    }
+    return fn;
   }
 
   run(opts, cwd) {
-    console.log('opts:', opts);
-    console.log('cwd:', cwd);
+    var cmds   = R.invert(opts).true;
+    var url    = `/${cmds.join('/')}/`;
+    var params = this.match(url).params;
+    var route  = this.findRouteByParams(params);
+    var fn     = this.getFn(route, params);
+
+    if (R.is(Function, fn)) {
+      return fn(opts);
+    }
   }
 }

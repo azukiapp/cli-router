@@ -1,6 +1,7 @@
 Cli Router help
 
 Usage:
+  azk agent (start|stop|status) [--reload-vm --no-daemon] [-v]... [-q] [-l]
   azk stop [<system>] [-v]... [options] [-l]
   azk start [<system>] [--reprovision --rebuild --open] [-v]... [options] [-l]
   azk scale [<system>] [<to>] [-v]... [options] [-l]

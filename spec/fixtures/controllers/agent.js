@@ -8,6 +8,15 @@ class Agent extends Controller {
   index() {
     return 'agent';
   }
+
+  start(opts={}) {
+    var system = opts['<system>'];
+    return `agent start ${system}`;
+  }
+
+  stop() {
+    return 'agent stop';
+  }
 }
 
 module.exports = Agent;
