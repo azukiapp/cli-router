@@ -2,10 +2,8 @@
 require('source-map-support').install();
 var path = require('path');
 
-var usage_path = path.join(__dirname, 'usage.txt');
-
 var Cli = require('../lib/src').Cli;
-var cli = new Cli({ path: usage_path});
+var cli = new Cli({ path: path.join(__dirname, 'usage.txt') });
 
 var result = cli.run({
   argv: process.argv.slice(2),

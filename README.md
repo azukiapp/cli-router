@@ -1,6 +1,38 @@
 # cli-router
 
-#### Before start development
+[![NPM](https://nodei.co/npm/cli-router.png)](https://nodei.co/npm/cli-router/)
+
+A simple Cli router to Controllers
+
+## Install with [npm](https://www.npmjs.com/package/cli-router)
+
+```shell
+$ npm install --save cli-router
+```
+
+## Usage
+
+Example of binary usage:
+
+```javascript
+#!/usr/bin/env node
+var path = require('path');
+
+var Cli = require('../lib/src').Cli;
+var cli = new Cli({ path: path.join(__dirname, 'usage.txt') });
+
+var result = cli.run({
+  argv: process.argv.slice(2),
+  version: '2.0'
+}, {
+  // ui: {},
+  cwd: process.cwd()
+});
+
+console.log(result);
+```
+
+## CONTRIBUTING
 
 - Install/Update dependencies:
 
