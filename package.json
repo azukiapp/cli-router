@@ -2,9 +2,9 @@
   "name": "cli-router",
   "version": "0.0.2",
   "description": "cli-router",
-  "main": "index.js",
+  "main": "./lib/src/index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "example/index.js",
     "test": "./node_modules/.bin/gulp lint test",
     "deploy": "./node_modules/.bin/npm-deploy"
   },
