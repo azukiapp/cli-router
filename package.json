@@ -2,7 +2,7 @@
   "name": "cli-router",
   "version": "0.0.3",
   "description": "cli-router",
-  "main": "./lib/src/index.js",
+  "main": "index.js",
   "scripts": {
     "start": "example/index.js",
     "test": "./node_modules/.bin/gulp lint test",
