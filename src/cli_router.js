@@ -79,8 +79,11 @@ export class CliRouter {
       if (R.is(String, route.Controller)) {
         route.Controller = this.loadController(route.Controller);
       }
-      var controller = new route.Controller(opts);
-      fn = !R.isNil(params.action) ? controller[params.action] : controller.index;
+      var controller = new (route.Controller)(opts);
+      fn = (...args) => {
+        var fn = !R.isNil(params.action) ? controller[params.action] : controller.index;
+        return fn.apply(controller, args);
+      };
     } else if (route.hasOwnProperty('fn')) {
       fn = route.fn;
     }
@@ -111,7 +114,7 @@ export class CliRouter {
     return args;
   }
 
-  run(args, opts) {
+  run(args, opts, obj) {
     var cmds = this.exatractCommads(args);
 
     if (!R.isNil(cmds) && !R.isEmpty(cmds)) {
@@ -120,7 +123,10 @@ export class CliRouter {
       var fn    = this.getFn(route, match, opts);
 
       if (R.is(Function, fn)) {
-        return fn(this.cleanArgs(args));
+        args = this.cleanArgs(args);
+        obj = obj || this;
+
+        return fn(args, obj);
       }
     }
   }

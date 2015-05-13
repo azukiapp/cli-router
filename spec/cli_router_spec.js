@@ -48,19 +48,18 @@ describe('CliRouter module', function() {
     h.expect(route).to.have.deep.property('params.action', 'start');
   });
 
-  it('should fn of route /agent', function() {
+  it('should fn result of route /agent', function() {
     var action     = '/agent';
     var cli_router = new CliRouter(controllers_root)
       .add(action);
 
-    var params = cli_router.match(action).params;
-    var route  = cli_router.findRouteByParams(params);
-    var fn     = cli_router.getFn(route, params);
-
     var Controller = require(path.join(controllers_root, action));
-    var should_fn = (new Controller({})).index;
+    var controller = new Controller();
+    var params     = cli_router.match(action).params;
+    var route      = cli_router.findRouteByParams(params);
+    var result     = cli_router.getFn(route, params)();
 
-    h.expect(fn).to.eql(should_fn);
+    h.expect(result).to.eql(controller.index());
   });
 
   describe('run with options', function () {

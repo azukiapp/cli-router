@@ -45,14 +45,14 @@ export class Cli {
     return this.router.routes;
   }
 
-  run(args, opts) {
+  run(args, opts, obj) {
     if (Array.isArray(args) || typeof args === 'string') {
       args = { argv: args };
     }
     var result = this.docopt(args);
 
     if (typeof result !== 'string') {
-      result = this.router.run(result, opts);
+      result = this.router.run(result, opts, (obj || this));
     }
 
     return result;

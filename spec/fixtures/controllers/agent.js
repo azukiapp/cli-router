@@ -10,8 +10,7 @@ class Agent extends CliController {
   }
 
   start(params={}) {
-    var system = params.system;
-    return `agent start ${system}`;
+    return `agent start ${params.system}`;
   }
 
   stop() {

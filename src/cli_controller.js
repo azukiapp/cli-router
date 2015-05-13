@@ -1,7 +1,10 @@
 export class CliController {
-  contructor(opts) {
-    this.ui  = opts.ui;
-    this.cwd = opts.cwd;
+  constructor(opts = {}) {
+    Object.keys(opts).forEach((key) => {
+      if (opts.hasOwnProperty(key)) {
+        this[key] = opts[key];
+      }
+    });
   }
 
   index() {
