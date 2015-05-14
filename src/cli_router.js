@@ -13,6 +13,8 @@ export class CliRouter {
     this.route_rules      = [ rule ];
     this.routes           = [];
     this.controller_names = [];
+    // https://regex101.com/r/fM4pO5/1
+    this.param_regex = /^(?:[--]{2}(.))|^<|>$/gm;
   }
 
   add(pathname, controller, startAt) {
@@ -91,7 +93,7 @@ export class CliRouter {
     return fn;
   }
 
-  exatractCommads(args) {
+  extractCommands(args) {
     var cmds = [];
     for (var i = 0; i < this.controller_names.length; i++) {
       var controller_name = this.controller_names[i];
@@ -99,7 +101,10 @@ export class CliRouter {
         cmds.push(controller_name);
       }
     }
-    cmds = R.uniq(R.concat(cmds, (R.invert(args).true || [])));
+    // Remove the options (starting with "-" or are between "<>")
+    var isNoOptions = (arg) => { return !this.param_regex.test(arg); };
+    var inverted_args = R.filter(isNoOptions, (R.invert(args).true || []));
+    cmds = R.uniq(R.concat(cmds, inverted_args));
 
     return cmds;
   }
@@ -108,15 +113,14 @@ export class CliRouter {
     var args = {};
     for (var key in old_args) {
       var value = old_args[key];
-      // https://regex101.com/r/fM4pO5/1
-      key = key.replace(/^(?:[--]{2}(.))|^<|>$/gm, '$1');
+      key = key.replace(this.param_regex, '$1');
       args[key] = value;
     }
     return args;
   }
 
   run(args, opts, obj) {
-    var cmds = this.exatractCommads(args);
+    var cmds = this.extractCommands(args);
 
     if (!R.isNil(cmds) && !R.isEmpty(cmds)) {
       var match = this.match(`/${cmds.join('/')}/`).params;
