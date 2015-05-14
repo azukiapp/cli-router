@@ -79,6 +79,7 @@ export class CliRouter {
       if (R.is(String, route.Controller)) {
         route.Controller = this.loadController(route.Controller);
       }
+      opts = R.merge(opts, { name: params.controller });
       var controller = new (route.Controller)(opts);
       fn = (...args) => {
         var fn = !R.isNil(params.action) ? controller[params.action] : controller.index;
