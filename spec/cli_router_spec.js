@@ -133,4 +133,37 @@ describe('CliRouter module', function() {
     });
   });
 
+  describe('should extracted cmds', function () {
+    var action = '/agent';
+    var cli_router = new CliRouter(controllers_root)
+      .add(action);
+
+    it('from args without options', function() {
+      var args = { '--': false,
+        '--no-daemon': false,
+        '--quiet': false,
+        '--verbose': 0,
+        '--version': false,
+        agent: true,
+        ssh: false,
+        start: true,
+        vm: false
+      };
+      h.expect(cli_router.extractCommands(args)).to.eql(['agent', 'start']);
+    });
+
+    it('from args with multiple options', function() {
+      var args = { '--': false,
+        '--no-daemon': true,
+        '--quiet': false,
+        '--verbose': 0,
+        '--version': true,
+        agent: true,
+        ssh: false,
+        start: true,
+        vm: false
+      };
+      h.expect(cli_router.extractCommands(args)).to.eql(['agent', 'start']);
+    });
+  });
 });

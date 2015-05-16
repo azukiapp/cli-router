@@ -101,12 +101,13 @@ export class CliRouter {
         cmds.push(controller_name);
       }
     }
-    // Remove the options (starting with "-" or are between "<>")
-    var isNoOptions = (arg) => { return !this.param_regex.test(arg); };
-    var inverted_args = R.filter(isNoOptions, (R.invert(args).true || []));
-    cmds = R.uniq(R.concat(cmds, inverted_args));
-
-    return cmds;
+    // Filter commands and actions (do not start with "-" or between "<>")
+    R.mapObjIndexed((v, k) => {
+      if (R.isNil(k.match(this.param_regex)) && !!v) {
+        cmds.push(k);
+      }
+    }, args);
+    return R.uniq(cmds);
   }
 
   cleanArgs(old_args) {
