@@ -13,8 +13,8 @@ export class CliRouter {
     this.route_rules      = [ rule ];
     this.routes           = [];
     this.controller_names = [];
-    // https://regex101.com/r/fM4pO5/1
-    this.param_regex = /^(?:[--]{2}(.))|^<|>$/gm;
+    // https://regex101.com/r/fM4pO5/2
+    this.param_regex = /^(?:[-_]{2})|^<|>$/gm;
   }
 
   add(pathname, controller, startAt) {
@@ -123,7 +123,11 @@ export class CliRouter {
     var args = {};
     for (var key in full_args) {
       var value = full_args[key];
-      key = key.replace(this.param_regex, '$1');
+      if (key === '--') {
+        key = '__leftover';
+      } else {
+        key = key.replace(this.param_regex, '');
+      }
       args[key] = value;
     }
     return args;
