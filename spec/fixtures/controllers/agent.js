@@ -1,10 +1,6 @@
 import { CliController } from '../../../src/cli_controller';
 
 class Agent extends CliController {
-  constructor(...args) {
-    super(...args);
-  }
-
   index() {
     return 'agent';
   }

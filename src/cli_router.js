@@ -73,19 +73,29 @@ export class CliRouter {
     return route;
   }
 
-  getFn(route, params, opts) {
-    if (!R.is(Object, route) || !R.is(Object, params)) { return; }
+  getFn(controller, opts={}) {
+    controller = controller || {};
+    var route = controller.route;
+
+    if (!R.is(Object, route) || !R.is(Object, route.params)) { return; }
     var fn;
+    var params = route.params;
 
     if (route.hasOwnProperty('Controller')) {
       if (R.is(String, route.Controller)) {
         route.Controller = this.loadController(route.Controller);
       }
-      opts = R.merge(opts, { name: params.controller });
-      var controller = new (route.Controller)(opts);
+      opts = R.merge(opts, {
+        name     : params.controller,
+        route,
+        params,
+        args     :  controller.args,
+        full_args: controller.full_args,
+      });
+      var obj = new (route.Controller)(opts);
       fn = (...args) => {
         var fn = !R.isNil(params.action) ? controller[params.action] : controller.index;
-        return fn.apply(controller, args);
+        return fn.apply(obj, args);
       };
     } else if (route.hasOwnProperty('fn')) {
       fn = route.fn;
@@ -110,30 +120,37 @@ export class CliRouter {
     return R.uniq(cmds);
   }
 
-  cleanArgs(old_args) {
+  cleanArgs(full_args) {
     var args = {};
-    for (var key in old_args) {
-      var value = old_args[key];
+    for (var key in full_args) {
+      var value = full_args[key];
       key = key.replace(this.param_regex, '$1');
       args[key] = value;
     }
     return args;
   }
 
-  run(args, opts, obj) {
-    var cmds = this.extractCommands(args);
+  controller(full_args) {
+    var route = {};
+    var cmds = this.extractCommands(full_args);
 
     if (!R.isNil(cmds) && !R.isEmpty(cmds)) {
-      var match = this.match(`/${cmds.join('/')}/`).params;
-      var route = this.findRouteByParams(match);
-      var fn    = this.getFn(route, match, opts);
-
-      if (R.is(Function, fn)) {
-        args = this.cleanArgs(args);
-        obj = obj || this;
-
-        return fn(args, obj);
+      var match = this.match(`/${cmds.join('/')}/`);
+      if (R.is(Object, match)) {
+        route = this.findRouteByParams(match.params);
+        route = R.merge(route, match);
       }
+    }
+
+    var args = this.cleanArgs(full_args);
+    return { route, params: route.params, args, full_args };
+  }
+
+  run(args, opts, obj) {
+    var controller = this.controller(args);
+    var fn         = this.getFn(controller, opts);
+    if (R.is(Function, fn)) {
+      return fn(controller.args, (obj || this));
     }
   }
 }

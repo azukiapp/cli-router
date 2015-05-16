@@ -52,14 +52,16 @@ describe('CliRouter module', function() {
     var action     = '/agent';
     var cli_router = new CliRouter(controllers_root)
       .add(action);
+    var args = {
+      agent: true,
+    };
 
     var Controller = require(path.join(controllers_root, action));
-    var controller = new Controller();
-    var params     = cli_router.match(action).params;
-    var route      = cli_router.findRouteByParams(params);
-    var result     = cli_router.getFn(route, params)();
+    var obj    = new Controller();
+    var data   = cli_router.controller(args);
+    var result = cli_router.getFn(data)();
 
-    h.expect(result).to.eql(controller.index());
+    h.expect(result).to.eql(obj.index());
   });
 
   describe('run with options', function () {
