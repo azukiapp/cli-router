@@ -5,7 +5,7 @@ Usage:
   azk stop [<system>] [-v]... [options] [-l]
   azk start [<system>] [--reprovision --rebuild --open] [-v]... [options] [-l]
   azk scale [<system>] [<to>] [-v]... [options] [-l]
-  azk vm (ssh|remove|stop) [-v]... [options] [-- <ssh-options>...] [-l]
+  azk vm (ssh|remove|stop) [-v]... [options] [-- <ssh-options>...]
   azk [help | -h | --help]
   azk --version
 

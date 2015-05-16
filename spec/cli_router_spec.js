@@ -133,6 +133,34 @@ describe('CliRouter module', function() {
       var result = cli_router.run(options, controller_opts);
       h.expect(result).to.eql('system start');
     });
+
+    it('should run `vm ssh -- echo terminal`', function() {
+      var options = R.merge(should_options, {
+        '<ssh-options>': ['echo', 'terminal'],
+        vm: true,
+        ssh: true,
+      });
+      var cli_router = new CliRouter(controllers_root)
+        .add('/vm');
+
+      var result = cli_router.run(options, controller_opts);
+      h.expect(result).to.eql('echo terminal');
+    });
+
+    it('should run `vm echo -- echo test` with function', function() {
+      var options = R.merge(should_options, {
+        '<ssh-options>': ['echo', 'test'],
+        vm: true,
+        echo: true,
+      });
+      var cli_router = new CliRouter(controllers_root)
+        .add('/vm/echo', (params) => {
+          return params['ssh-options'].join(' ');
+        });
+
+      var result = cli_router.run(options, controller_opts);
+      h.expect(result).to.eql('echo test');
+    });
   });
 
   describe('should extracted cmds', function () {
