@@ -94,8 +94,7 @@ export class CliRouter {
       });
       var obj = new (route.Controller)(opts);
       fn = (...args) => {
-        var fn = !R.isNil(params.action) ? controller[params.action] : controller.index;
-        return fn.apply(obj, args);
+        return obj.run_action.apply(obj, [params.action, ...args]);
       };
     } else if (route.hasOwnProperty('fn')) {
       fn = route.fn;
