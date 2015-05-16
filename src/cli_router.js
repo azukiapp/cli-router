@@ -124,7 +124,7 @@ export class CliRouter {
     for (var key in full_args) {
       var value = full_args[key];
       if (key === '--') {
-        key = '__leftover';
+        key = '__doubledash';
       } else {
         key = key.replace(this.param_regex, '');
       }
