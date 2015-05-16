@@ -17,11 +17,16 @@ export class CliController {
     if (R.isNil(action_name) || !R.is(Function, this[action_name])) {
       action_name = 'index';
     }
-    this.before_action(action_name, ...args);
-    var result = this[action_name].apply(this, args);
-    this.after_action(action_name, ...args);
-    return result;
+    return this.before_action(action_name, ...args);
   }
-  before_action(/* action_name, ...args */) {}
-  after_action(/* action_name, ...args */) {}
+
+  before_action(action_name, ...args) {
+    var action_result = this[action_name].apply(this, args);
+    this.after_action(action_name, ...args);
+    return action_result;
+  }
+
+  after_action(action_name, action_result) {
+    return action_result;
+  }
 }
