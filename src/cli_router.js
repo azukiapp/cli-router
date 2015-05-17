@@ -89,7 +89,7 @@ export class CliRouter {
         name     : params.controller,
         route,
         params,
-        args     :  controller.args,
+        args     : controller.args,
         full_args: controller.full_args,
       });
       var obj = new (route.Controller)(opts);

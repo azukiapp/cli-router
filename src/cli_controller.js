@@ -22,8 +22,7 @@ export class CliController {
 
   before_action(action_name, ...args) {
     var action_result = this[action_name].apply(this, args);
-    this.after_action(action_name, ...args);
-    return action_result;
+    return this.after_action(action_name, action_result, ...args);
   }
 
   after_action(action_name, action_result) {
