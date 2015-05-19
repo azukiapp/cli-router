@@ -80,6 +80,8 @@ export class CliRouter {
     if (!R.is(Object, route) || !R.is(Object, route.params)) { return; }
     var fn;
     var params = route.params;
+    // Force camelcase actions
+    params.action = this._camelCase(params.action);
 
     if (route.hasOwnProperty('Controller')) {
       if (R.is(String, route.Controller)) {
@@ -147,6 +149,16 @@ export class CliRouter {
 
     var args = this.cleanArgs(full_args);
     return { route, params: route.params, args, full_args };
+  }
+
+  // https://github.com/substack/camelize/blob/master/index.js#L17-L21
+  _camelCase(str) {
+    if (!R.isNil(str)) {
+      str = str.replace(/[_.-](\w|$)/g, function (_, x) {
+        return x.toUpperCase();
+      });
+    }
+    return str;
   }
 
   run(args, opts, obj) {
