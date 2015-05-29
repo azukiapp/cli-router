@@ -1,6 +1,6 @@
 {
   "name": "cli-router",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {
     "babel-runtime": {
       "version": "5.2.17",
