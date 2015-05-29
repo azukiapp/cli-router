@@ -11,144 +11,129 @@ export class CliRouter {
     var rule = Router.Route(route_regex, 0);
 
     this.route_rules      = [ rule ];
+    this.commands_limit   = rule.keys.length;
     this.routes           = [];
     this.controller_names = [];
-    // https://regex101.com/r/fM4pO5/2
-    this.param_regex = /^(?:[-_]{2})|^<|>$/gm;
+    // https://regex101.com/r/fM4pO5/3
+    this.param_regex = /^(?:[-_]{1,2})|^<|>$/gm;
   }
 
-  add(pathname, controller, startAt) {
-    var route = Router.match(this.route_rules, pathname, startAt);
-
-    if (route) {
-      var controller_name = route.params.controller;
-      if (!R.isNil(controller_name) && !R.contains(controller_name)(this.controller_names)) {
-        this.controller_names.push(controller_name);
-      }
-
-      controller = controller || pathname;
-
-      if (typeof controller === 'string') {
-        route.Controller = controller;
-      } else if (typeof controller === 'function') {
-        route.fn = controller;
-      } else {
-        throw new Error(' route ' + pathname.toString() + ' requires a `controller`');
-      }
-
-      this.routes.push(route);
-    } else {
-      throw new Error(' invalid route ' + pathname.toString());
-
+  add(name, filter, controller) {
+    if (R.isNil(name)) {
+      throw new Error('Route name not defined');
     }
+    controller = controller || name;
+    var actions = [];
+    var fn;
+    if (R.is(Function, controller)) {
+      fn = controller;
+      controller = undefined;
+    } else if (/\./.test(controller)) {
+      actions = controller.split('.');
+      controller = actions.shift(0, 1);
+    }
+    filter = filter || controller || name;
+
+    var route = { name, controller, actions, filter, fn };
+    this.routes.push(route);
     return this;
   }
 
-  match(pathname, startAt) {
-    var params = Router.match(this.route_rules, pathname, startAt);
-    return params;
+  find(args, params) {
+    if (!R.is(Object, params)) {
+      throw new Error(`Invalid type '${typeof params}' of arguments to filter: ${params}`);
+    }
+    var route;
+    for (var i = 0; i < this.routes.length; i++) {
+      route = this.routes[i];
+      if (this.applyFilter(route, args, params)) {
+        break;
+      }
+    }
+    return route;
+  }
+
+  applyFilter(route, args, params) {
+    var filter = route.filter;
+    if (!R.is(Function, filter)) {
+      filter = (p) => p[route.filter];
+    }
+    return !!filter(params, args);
   }
 
   loadController(pathname) {
     return require(path.join(this.controllers_root, pathname));
   }
 
-  findRoute(controller, action) {
-    var routes = [];
-    for (var i = 0; i < this.routes.length; i++) {
-      if (this.routes[i].params.controller == controller &&
-        this.routes[i].params.action == action ) {
-        routes.push(this.routes[i]);
-      }
+  getFn(route, args, params={}) {
+    if (!R.is(Object, route) ||
+      (R.is(Object, route) && R.isNil(route.controller) && R.isNil(route.fn))
+    ) {
+      throw new Error(`Invalid route or not contain controller or fn methods: ${route}`);
     }
-    return R.last(routes);
-  }
+    route = R.clone(route);
 
-  findRouteByParams(params) {
-    var route = this.findRoute(params.controller, params.action);
-    if (!route) {
-      route = this.findRoute(params.controller);
-    }
-
-    return route;
-  }
-
-  getFn(controller, opts={}) {
-    controller = controller || {};
-    var route = controller.route;
-
-    if (!R.is(Object, route) || !R.is(Object, route.params)) { return; }
     var fn;
-    var params = route.params;
-    // Force camelcase actions
-    params.action = this._camelCase(params.action);
-
-    if (route.hasOwnProperty('Controller')) {
-      if (R.is(String, route.Controller)) {
-        route.Controller = this.loadController(route.Controller);
-      }
-      opts = R.merge(opts, {
-        name     : params.controller,
-        route,
-        params,
-        args     : controller.args,
-        full_args: controller.full_args,
-      });
-      var obj = new (route.Controller)(opts);
-      fn = (...args) => {
-        return obj.run_action.apply(obj, [params.action, ...args]);
+    if (!R.isNil(route.controller)) {
+      // Force camelcase actions
+      var camelCases = (arr) => {
+        return R.map((action) => this._camelCase(action), arr || []);
       };
-    } else if (route.hasOwnProperty('fn')) {
+      var actions = R.unionWith((a, b) => a === b, camelCases(route.actions), camelCases(args.slice(1)));
+      actions = !R.isEmpty(actions) ? actions : ['index'];
+      route.actions = R.clone(actions);
+
+      if (!route.hasOwnProperty('Controller')) {
+        route.Controller = this.loadController(route.controller);
+      }
+      params = R.merge(params, {
+        name: route.name,
+        route,
+      });
+      var obj_to_call = new (route.Controller)(params);
+      var action      = actions.pop();
+      var methods     = actions.slice(0);
+      var method;
+      while (!R.isEmpty(methods)) {
+        method      = methods.shift();
+        obj_to_call = obj_to_call[method];
+      }
+      fn = (...args) => {
+        return obj_to_call.run_action.apply(obj_to_call, [action, ...args]);
+      };
+    } else if (!R.isNil(route.fn)) {
       fn = route.fn;
     }
     return fn;
   }
 
-  extractCommands(args) {
-    var cmds = [];
-    for (var i = 0; i < this.controller_names.length; i++) {
-      var controller_name = this.controller_names[i];
-      if (args.hasOwnProperty(controller_name) && !!args[controller_name]) {
-        cmds.push(controller_name);
+  cleanArgs(args, default_params) {
+    var inverted = R.invert(default_params);
+    var remove_arguments = (arg) => {
+      var value = R.head(inverted[arg] || []) || '';
+      if (!(arg.match(this.param_regex) || value.match(this.param_regex))) {
+        return arg;
       }
-    }
-    // Filter commands and actions (do not start with "-" or between "<>")
-    R.mapObjIndexed((v, k) => {
-      if (R.isNil(k.match(this.param_regex)) && !!v) {
-        cmds.push(k);
-      }
-    }, args);
-    return R.uniq(cmds);
+    };
+    var end_index = args.indexOf('--');
+    if (end_index === -1) { end_index = args.length; }
+    var no_doubledash_args = args.slice(0, end_index);
+    args = R.filter((arg) => !R.isNil(arg), R.map(remove_arguments, no_doubledash_args));
+    return [args, this.cleanParams(default_params)];
   }
 
-  cleanArgs(full_args) {
-    var args = {};
-    for (var key in full_args) {
-      var value = full_args[key];
+  cleanParams(default_params) {
+    var params = {};
+    for (var key in default_params) {
+      var value = default_params[key];
       if (key === '--') {
         key = '__doubledash';
       } else {
         key = key.replace(this.param_regex, '');
       }
-      args[key] = value;
+      params[key] = value;
     }
-    return args;
-  }
-
-  controller(full_args) {
-    var route = {};
-    var cmds = this.extractCommands(full_args);
-
-    if (!R.isNil(cmds) && !R.isEmpty(cmds)) {
-      var match = this.match(`/${cmds.join('/')}/`);
-      if (R.is(Object, match)) {
-        route = this.findRouteByParams(match.params);
-        route = R.merge(route, match);
-      }
-    }
-
-    var args = this.cleanArgs(full_args);
-    return { route, params: route.params, args, full_args };
+    return params;
   }
 
   // https://github.com/substack/camelize/blob/master/index.js#L17-L21
@@ -161,11 +146,13 @@ export class CliRouter {
     return str;
   }
 
-  run(args, opts, obj) {
-    var controller = this.controller(args);
-    var fn         = this.getFn(controller, opts);
+  run(args, default_params, obj) {
+    var [cargs, params] = this.cleanArgs(args, default_params);
+    var route = this.find(args, default_params);
+    var fn    = this.getFn(route, cargs, { args, params, default_params });
+
     if (R.is(Function, fn)) {
-      return fn(controller.args, (obj || this));
+      return fn(params, (obj || this));
     }
   }
 }

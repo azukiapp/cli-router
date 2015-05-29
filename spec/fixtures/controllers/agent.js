@@ -1,6 +1,17 @@
 import { CliController } from '../../../src/cli_controller';
 
+class SubAgent extends CliController {
+  subcommand() {
+    return 'subcommand';
+  }
+}
+
 class Agent extends CliController {
+  constructor(...args) {
+    super(...args);
+    this.subagent = new SubAgent();
+  }
+
   index() {
     return 'agent';
   }
@@ -9,8 +20,8 @@ class Agent extends CliController {
     return `agent start ${params.system}`;
   }
 
-  stop() {
-    return 'agent stop';
+  stop(params={}) {
+    return `agent stop ${params.system}`;
   }
 }
 

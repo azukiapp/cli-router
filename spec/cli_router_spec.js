@@ -1,7 +1,6 @@
 import h from './spec-helper';
 import { CliRouter } from '../src/cli_router';
 
-var R    = require('ramda');
 var path = require('path');
 
 describe('CliRouter module', function() {
@@ -10,190 +9,165 @@ describe('CliRouter module', function() {
     cwd: process.cwd()
   };
 
-  it('shoud ordered src of routes', function() {
-    var cli_router = new CliRouter(controllers_root)
-      .add('/agent', () => {})
-      .add('/agent/stop', () => {})
-      .add('/start', () => {})
-      .add('/stop' , () => {});
+  var cli_router = new CliRouter(controllers_root)
+    .add('help', (p) => p.help || p['--help'])
+    .add('agent_start', (p, args) => p.agent && args[1] === 'start', 'agent.start')
+    .add('agent')
+    .add('start', null, (params={}) => `start ${params.system}`)
+    .add('vm');
 
-    h.expect(cli_router.routes[0].params).to.eql({ controller: 'agent', action: undefined });
-    h.expect(cli_router.routes[1].params).to.eql({ controller: 'agent', action: 'stop' });
-    h.expect(cli_router.routes[2].params).to.eql({ controller: 'start', action: undefined });
-    h.expect(cli_router.routes[3].params).to.eql({ controller: 'stop' , action: undefined });
+  describe('should ordered routes and check', function () {
+    it('controller', function() {
+      h.expect(cli_router.routes[0]).to.have.property('controller', 'help');
+      h.expect(cli_router.routes[1]).to.have.property('controller', 'agent');
+      h.expect(cli_router.routes[2]).to.have.property('controller', 'agent');
+      h.expect(cli_router.routes[3]).to.have.property('controller', undefined);
+    });
+
+    it('actions', function() {
+      h.expect(cli_router.routes[0].actions).to.deep.eql([]);
+      h.expect(cli_router.routes[1].actions).to.deep.eql(['start']);
+      h.expect(cli_router.routes[2].actions).to.deep.eql([]);
+      h.expect(cli_router.routes[3].actions).to.deep.eql([]);
+    });
+
+    it('fn', function() {
+      h.expect(cli_router.routes[0].fn).to.deep.eql(undefined);
+      h.expect(cli_router.routes[1].fn).to.deep.eql(undefined);
+      h.expect(cli_router.routes[2].fn).to.deep.eql(undefined);
+      h.expect(cli_router.routes[3].fn()).to.deep.eql((() => 'start undefined')());
+    });
   });
 
-  it('should route with agent controller', function() {
-    var action     = '/agent';
-    var cli_router = new CliRouter(controllers_root)
-      .add(action);
+  describe('should find route', function () {
+    it('agent to `agent` command', function() {
+      var command = 'agent';
+      var args    = [ command ];
+      var params  = {};
+      params[command] = true;
+      var route  = cli_router.find(args, params);
 
-    var params = cli_router.match(action).params;
-    var route  = cli_router.findRouteByParams(params);
+      h.expect(route).to.have.deep.property('name', command);
+      h.expect(route).to.have.deep.property('controller', command);
+      h.expect(route.actions).to.have.deep.eql([]);
+    });
 
-    h.expect(route).to.have.deep.property('Controller');
-    h.expect(route).to.have.deep.property('params.controller', 'agent');
-    h.expect(route).to.have.deep.property('params.action', undefined);
+    it('agent_start to `agent start` command', function() {
+      var command = 'agent';
+      var args    = [ command, 'start' ];
+      var params  = { start: true };
+      params[command] = true;
+      var route  = cli_router.find(args, params);
+
+      h.expect(route).to.have.deep.property('name', 'agent_start');
+      h.expect(route).to.have.deep.property('controller', command);
+      h.expect(route.actions).to.have.deep.eql(['start']);
+    });
+
+    it('help to `help` command', function() {
+      var command = 'help';
+      var args    = [ command ];
+      var params  = {};
+      params[command] = true;
+      var route  = cli_router.find(args, params);
+
+      h.expect(route).to.have.deep.property('name', command);
+      h.expect(route).to.have.deep.property('controller', command);
+      h.expect(route.actions).to.have.deep.eql([]);
+    });
+
+    it('help to `agent --help` command', function() {
+      var command = 'agent';
+      var args    = [ command, '--help' ];
+      var params  = { '--help': true };
+      params[command]   = true;
+      var route  = cli_router.find(args, params);
+
+      h.expect(route).to.have.deep.property('name', 'help');
+      h.expect(route).to.have.deep.property('controller', 'help');
+      h.expect(route.actions).to.have.deep.eql([]);
+    });
+
+    it('agent and get fn to `agent` command', function() {
+      var command = 'agent';
+      var args    = [ command ];
+      var params  = {};
+      params[command] = true;
+      var route  = cli_router.find(args, params);
+
+      var Controller = require(path.join(controllers_root, command));
+      var obj    = new Controller();
+      var result = cli_router.getFn(route, args, { params })();
+
+      h.expect(result).to.eql(obj.index());
+    });
+
+    it('agent and call sub fn to `agent subagent subcommand` command', function() {
+      var command = 'agent';
+      var args    = [ command, 'subagent', 'subcommand' ];
+      var params  = {
+        subagent: true,
+        subcommand: true
+      };
+      params[command] = true;
+      var route  = cli_router.find(args, params);
+
+      var Controller = require(path.join(controllers_root, command));
+      var obj    = new Controller();
+      var result = cli_router.getFn(route, args, { params })();
+
+      h.expect(result).to.eql(obj.subagent.subcommand());
+    });
   });
 
-  it('should route with agent controller and start action', function() {
-    var action     = '/agent/start';
-    var cli_router = new CliRouter(controllers_root)
-      .add(action);
+  describe('should run', function () {
+    it('`agent stop demo`', function() {
+      var args   = [ 'agent', 'stop', 'demo' ];
+      var params = {
+        agent: true,
+        stop: true,
+        '<system>': 'demo'
+      };
 
-    var params = cli_router.match(action).params;
-    var route  = cli_router.findRouteByParams(params);
+      var result = cli_router.run(args, params, controller_opts);
+      h.expect(result).to.eql('agent stop demo');
+    });
 
-    h.expect(route).to.have.deep.property('params.controller', 'agent');
-    h.expect(route).to.have.deep.property('params.action', 'start');
-  });
-
-  it('should fn result of route /agent', function() {
-    var action     = '/agent';
-    var cli_router = new CliRouter(controllers_root)
-      .add(action);
-    var args = {
-      agent: true,
-    };
-
-    var Controller = require(path.join(controllers_root, action));
-    var obj    = new Controller();
-    var data   = cli_router.controller(args);
-    var result = cli_router.getFn(data)();
-
-    h.expect(result).to.eql(obj.index());
-  });
-
-  describe('run with options', function () {
-    var should_options = {
-      '--': false,
-      '--help': false,
-      '--log': false,
-      '--no-daemon': false,
-      '--open': false,
-      '--quiet': false,
-      '--rebuild': false,
-      '--reload-vm': false,
-      '--reprovision': false,
-      '--verbose': 0,
-      '--version': false,
-      '<ssh-options>': [],
-      '<system>': null,
-      '<to>': null,
-      agent: false,
-      help: false,
-      remove: false,
-      scale: false,
-      ssh: false,
-      start: false,
-      status: false,
-      stop: false,
-      vm: false
-    };
-
-    it('should run `agent start demo`', function() {
-      var options = R.merge(should_options, {
+    it('`agent start demo -v`', function() {
+      var args   = [ 'agent', 'start', 'demo', '-v' ];
+      var params = {
         agent: true,
         start: true,
-        '<system>': 'demo'
-      });
-      var cli_router = new CliRouter(controllers_root)
-        .add('/agent')
-        .add('/start', () => 'start');
+        '<system>': 'demo',
+        '--verbose': true
+      };
 
-      var result = cli_router.run(options, controller_opts);
-
+      var result = cli_router.run(args, params, controller_opts);
       h.expect(result).to.eql('agent start demo');
     });
 
-    it('should run `agent start` with function', function() {
-      var options = R.merge(should_options, {
-        agent: true,
-        start: true
-      });
-      var cli_router = new CliRouter(controllers_root)
-        .add('/agent')
-        .add('/agent/start', () => 'agent no start')
-        .add('/start', () => 'start');
-
-      var result = cli_router.run(options, controller_opts);
-      h.expect(result).to.eql('agent no start');
-    });
-
-    it('should run `system start` with function', function() {
-      var options = R.merge(should_options, {
-        system: true,
+    it('`start old -f`', function() {
+      var args   = [ 'start', 'old', '-f' ];
+      var params = {
         start: true,
-      });
-      var cli_router = new CliRouter(controllers_root)
-        .add('/system')
-        .add('/system/start', () => 'system start')
-        .add('/start', () => 'start');
+        '<system>': 'old',
+        '--force': true
+      };
 
-      var result = cli_router.run(options, controller_opts);
-      h.expect(result).to.eql('system start');
+      var result = cli_router.run(args, params, controller_opts);
+      h.expect(result).to.eql('start old');
     });
 
-    it('should run `vm ssh -- echo terminal`', function() {
-      var options = R.merge(should_options, {
-        '<ssh-options>': ['echo', 'terminal'],
+    it('`vm ssh -- echo terminal`', function() {
+      var args = ['vm', 'ssh', '--', 'echo', 'terminal'];
+      var params = {
         vm: true,
         ssh: true,
-      });
-      var cli_router = new CliRouter(controllers_root)
-        .add('/vm');
+        '<ssh-options>': ['echo', 'terminal'],
+      };
 
-      var result = cli_router.run(options, controller_opts);
+      var result = cli_router.run(args, params, controller_opts);
       h.expect(result).to.eql('echo terminal');
-    });
-
-    it('should run `vm echo -- echo test` with function', function() {
-      var options = R.merge(should_options, {
-        '<ssh-options>': ['echo', 'test'],
-        vm: true,
-        echo: true,
-      });
-      var cli_router = new CliRouter(controllers_root)
-        .add('/vm/echo', (params) => {
-          return params['ssh-options'].join(' ');
-        });
-
-      var result = cli_router.run(options, controller_opts);
-      h.expect(result).to.eql('echo test');
-    });
-  });
-
-  describe('should extracted cmds', function () {
-    var action = '/agent';
-    var cli_router = new CliRouter(controllers_root)
-      .add(action);
-
-    it('from args without options', function() {
-      var args = { '--': false,
-        '--no-daemon': false,
-        '--quiet': false,
-        '--verbose': 0,
-        '--version': false,
-        agent: true,
-        ssh: false,
-        start: true,
-        vm: false
-      };
-      h.expect(cli_router.extractCommands(args)).to.eql(['agent', 'start']);
-    });
-
-    it('from args with multiple options', function() {
-      var args = { '--': false,
-        '--no-daemon': true,
-        '--quiet': false,
-        '--verbose': 0,
-        '--version': true,
-        agent: true,
-        ssh: false,
-        start: true,
-        vm: false
-      };
-      h.expect(cli_router.extractCommands(args)).to.eql(['agent', 'start']);
     });
   });
 });

@@ -22,19 +22,18 @@ describe('Cli module', function() {
 
   describe('simple usage', function () {
     cli_options.path = h.fixture_path('usage.txt');
+    var cli      = new TestCli(cli_options);
     var doc_opts = { exit: false };
 
     describe('without version', function () {
-      var cli = new TestCli(cli_options);
-
       it('show options', function() {
         doc_opts.argv = '--version';
 
         var options = cli.docopt(doc_opts);
-        var result  = cli.run(doc_opts);
+        var result = () => cli.run(doc_opts);
 
         h.expect(options).to.have.property("--version", true);
-        h.expect(result).to.eql(undefined);
+        h.expect(result).to.throw(Error, /Invalid route/);
       });
     });
 
@@ -55,14 +54,14 @@ describe('Cli module', function() {
       it('without args', function() {
         doc_opts.argv = [];
         var options = cli.docopt(doc_opts);
-        var result  = cli.run(doc_opts);
+        var result = () => cli.run(doc_opts);
 
         h.expect(options).to.eql({
           '--help': false,
           '--version': false,
           help: false,
         });
-        h.expect(result).to.eql(undefined);
+        h.expect(result).to.throw(Error, /Invalid route/);
       });
 
       it('should show --help', function() {
@@ -83,17 +82,18 @@ describe('Cli module', function() {
 
   describe('full usage', function () {
     cli_options.path = h.fixture_path('usage_full.txt');
+    var cli = new TestCli(cli_options)
+      .route('agent');
 
     var doc_opts = { exit: false };
 
-    it('should route /agent', function() {
-      var cli = new TestCli(cli_options)
-        .route('/agent');
-
+    it('should route agent', function() {
       doc_opts.argv = ['agent', 'start'];
       var result  = cli.run(doc_opts, controller_opts);
 
-      h.expect(cli.routes[0].params).to.eql({ controller: 'agent', action: undefined });
+      h.expect(cli.routes[0]).to.have.property('controller', 'agent');
+      h.expect(cli.routes[0].actions).to.deep.eql([]);
+      h.expect(cli.routes[0].fn).to.deep.eql(undefined);
       h.expect(result).to.eql('agent start null');
     });
   });

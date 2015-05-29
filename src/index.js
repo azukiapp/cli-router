@@ -50,9 +50,8 @@ export class Cli {
       args = { argv: args };
     }
     var result = this.docopt(args);
-
     if (typeof result !== 'string') {
-      result = this.router.run(result, opts, (obj || this));
+      result = this.router.run(args.argv, result, (obj || this));
     }
 
     return result;
