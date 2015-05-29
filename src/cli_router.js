@@ -1,19 +1,11 @@
-import Router from 'i40';
-
 var R    = require('ramda');
 var path = require('path');
 
 export class CliRouter {
-  constructor(controllers_root, route_regex) {
-    route_regex = route_regex || '/:controller/:action?';
+  constructor(controllers_root) {
     this.controllers_root = controllers_root || './';
 
-    var rule = Router.Route(route_regex, 0);
-
-    this.route_rules      = [ rule ];
-    this.commands_limit   = rule.keys.length;
-    this.routes           = [];
-    this.controller_names = [];
+    this.routes = [];
     // https://regex101.com/r/fM4pO5/3
     this.param_regex = /^(?:[-_]{1,2})|^<|>$/gm;
   }
