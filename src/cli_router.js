@@ -138,10 +138,15 @@ export class CliRouter {
     return str;
   }
 
-  run(args, default_params, obj) {
-    var [cargs, params] = this.cleanArgs(args, default_params);
-    var route = this.find(args, default_params);
-    var fn    = this.getFn(route, cargs, { args, params, default_params });
+  run(args, opts, obj) {
+    if (!(opts.hasOwnProperty('default_params') && R.is(Object, opts.default_params))) {
+      opts = { default_params: opts };
+    }
+    var [cargs, params] = this.cleanArgs(args, opts.default_params);
+    var route = this.find(args, opts.default_params);
+
+    opts = R.merge(opts, { args, params });
+    var fn = this.getFn(route, cargs, opts);
 
     if (R.is(Function, fn)) {
       return fn(params, (obj || this));

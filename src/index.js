@@ -1,7 +1,7 @@
 import { CliRouter } from './cli_router';
 
-var fs   = require('fs');
-
+var fs     = require('fs');
+var R      = require('ramda');
 var Docopt = require('docopt');
 
 export class Cli {
@@ -46,12 +46,14 @@ export class Cli {
   }
 
   run(args, opts, obj) {
-    if (Array.isArray(args) || typeof args === 'string') {
+    if (R.is(Array, args) || R.is(String, args)) {
       args = { argv: args };
     }
+    args.argv = R.flatten([ args.argv ]);
     var result = this.docopt(args);
     if (typeof result !== 'string') {
-      result = this.router.run(args.argv, result, (obj || this));
+      opts = R.merge(opts, { default_params: result });
+      result = this.router.run(args.argv, opts, (obj || this));
     }
 
     return result;
