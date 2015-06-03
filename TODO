@@ -1,5 +1,5 @@
 TODO:
- ☐ TODO task
- ✔ Completed task
-
-## To highlighter `TODO` files install [`PlainTasks`](https://github.com/aziz/PlainTasks)
+  ☐ CliRouter.cleanParams to CliRouter.normalizeParams
+    eg:
+      from: { '--help': true, '<system>': 'azdemo', help: false }
+      to: { options: { help: true }, arguments: { system: azkdemo }, help: false }
