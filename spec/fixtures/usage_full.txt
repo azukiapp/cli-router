@@ -1,17 +1,91 @@
-Cli Router help
+$ azk [options] [*command]
 
 Usage:
-  azk agent (start|stop|status) [--reload-vm --no-daemon] [-v]... [-q] [-l]
-  azk stop [<system>] [-v]... [options] [-l]
-  azk start [<system>] [--reprovision --rebuild --open] [-v]... [options] [-l]
-  azk scale [<system>] [<to>] [-v]... [options] [-l]
-  azk vm (ssh|remove|stop) [-v]... [options] [-- <ssh-options>...]
-  azk [help | -h | --help]
-  azk --version
+  azk agent (start|status|stop) [--no-daemon --child --no-reload-vm -q -l -h] [-v]...
+  azk config (track-toggle|track-status) [-q -l -h] [-v]...
+  azk doctor [--logo -q] [-v]...
+  azk docker [-q -l -h] [-v]... [-- <docker-args>...]
+  azk info [--no-colored -q -l -h] [-v]...
+  azk init [<path>] [--filename --force -q -l -h] [-v]...
+  azk logs [<system> <instances>] [--lines --no-timestamps --follow -q -l -h] [-v]...
+  azk scale [<system> <to>] [--remove -q -l -h] [-v]...
+  azk shell [<system>] [--command --cwd --image --remove --shell --silent --tty --no-tty -q -l -h] [-e -m -v]...
+  azk (start|restart) [<system>] [--reprovision --rebuild --open] [-q -l -h] [-v]...
+  azk status [<system>] [--long --short --text] [-q -l -h] [-v]...
+  azk stop [<system>] [--remove -q -l -h] [-v]...
+  azk vm (ssh|start|status|installed|stop|remove) [--force -q -l -h] [-v]... [-- <ssh-args>...]
+  azk [agent|config|vm|version] [--help]
+  azk help [<command>]
+  azk [--version -h --help]
+
+Commands:
+  agent    Controls azk agent
+  config   Controls azk configuration options
+  docker   Alias for calling docker in 'azk' scope configuration
+  doctor   Shows an analysis of `azk`'s health
+  help     Shows help about a specific command
+  info     Shows systems information for the current `Azkfile.js`
+  init     Initializes a project by adding the file Azkfile.js
+  logs     Shows logs for the systems
+  restart  Stops all systems and starts them again
+  scale    Scales (up or down) an instance of the system(s)
+  shell    Initializes a shell with instance context, or runs a specified command
+  start    Starts an instance of the system(s)
+  status   Shows systems(s) instances status(es)
+  stop     Stops an instance of the system(s)
+  version  Shows azk version
+  vm       Controls a virtual machine.
+
+Actions:
+  start                     Start azk agent
+  status                    Shows azk agent status
+  stop                      Stops azk agent running in the background
+  track-status              Displays tracking status
+  track-toggle              Toggles tracking behavior on/off
+
+Arguments:
+  docker-args               Options and arguments to be passed to Docker.
+  instances                 Number of instances.
+  path                      Path where manifest file can be found.
+  ssh-args                  Options and arguments to be passed to VM over ssh.
+  system                    System name where action will take place.
+  to                        Number of instances to be available after the scale.
 
 Options:
-  -h, --help     Show this screen.
-  --version      Show version.
-  -v, --verbose  Verbose mode [default: false].
-  -q, --quiet    Quiet mode.
-  --log, -l      Sets a log level
+  --command, -c             Runs a specific command
+  --cwd, -C                 Default directory
+  --env, -e                 Additional environment variables - multiple supported (`-e HTTP_PORT=5000 -e PORT=5000`).
+  --filename                Shows the name of the manifest file.
+  --force, -F               Force mode.
+  --follow, -f              Follow log output [default: false].
+  --help, -h                Show help usage.
+  --image, -i               Defines the image in which the command will be executed.
+  --log, -l                 Sets a log level.
+  --logo                    Shows the `azk` logo before showing health information [default: false].
+  --long                    Show all columns [default: false].
+  --mount, -m               Points to additional mounting - multiple supported (`-m ~/Home:/azk/user -m ~/data:/var/data`).
+  --lines=<n>, -n           Output the specified number of lines at the end of logs.
+  --no-colored              Hide outputs colors [default: false].
+  --no-daemon               `azk agent` does not run in background mode [default: false].
+  --no-timestamps           Hide log timestamps [default: false].
+  --open, -o                Open a url of system in the preferred application.
+  --quiet, -q               Never prompt [default: false].
+  --rebuild, -B             Force the rebuild, or pull image and reprovision before starting an instance [default: false].
+  --no-reload-vm            Not reloads the virtual machine settings [default: false].
+  --reprovision             Force the provisioning actions before starting an instance [default: false].
+  --remove, -r              Removes the instances before stopping [default: true].
+  --shell                   The path to the shell binary.
+  --short                   Hide 'Provisioned' column [default: false].
+  -T                        Disables pseudo-tty allocation [default: false].
+  -t                        Forces pseudo-tty allocation [default: false].
+  --text                    Show in text mode [default: false].
+  --verbose, -v             Sets the level of detail - multiple supported (-vv == --verbose 2) [default: 0].
+  --silent                  Prevents any log message about the command execution. It's useful when using the `-c` option and the output is used as input to another command using the pipe `|` operator [default: false].
+  --version                 Show azk version.
+
+Examples:
+  azk agent start --no-daemon
+  azk shell --image azukiapp/debian --shell /bin/bash
+  azk shell --mount ~/Home:/azk/user -env HOME=/azk/user -env HTTP_PORT=5000
+  azk status [system_name]
+  azk scale [system_name] 2
