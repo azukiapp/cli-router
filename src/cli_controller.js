@@ -15,7 +15,9 @@ export class CliController {
 
   run_action(action_name, ...args) {
     if (R.isNil(action_name) || !R.is(Function, this[action_name])) {
-      args.unshift(action_name);
+      if (!R.is(String, action_name)) {
+        args.unshift(action_name);
+      }
       action_name = 'index';
     }
     return this.before_action(action_name, ...args);
