@@ -111,9 +111,10 @@ export class CliRouter {
     if (end_index === -1) { end_index = args.length; }
     var no_doubledash_args = args.slice(0, end_index);
     args = R.filter((arg) => !R.isNil(arg), R.map(remove_arguments, no_doubledash_args));
-    return [args, this.cleanParams(default_params)];
+    return [args, this.cleanParams(default_params), this.normalizeParams(default_params)];
   }
 
+  // DEPRECATED - It will be replaced by normalization (this.normalizeParams)
   cleanParams(default_params) {
     var params = {};
     for (var key in default_params) {
@@ -124,6 +125,35 @@ export class CliRouter {
         key = key.replace(this.param_regex, '');
       }
       params[key] = value;
+    }
+    return params;
+  }
+
+  normalizeParams(default_params) {
+    var params = {
+      arguments: {},
+      options  : {},
+      commands : {},
+    };
+    var keys = Object.keys(default_params);
+    while (!R.isEmpty(keys)) {
+      var key = keys.shift();
+      var value = default_params[key];
+
+      // https://regex101.com/r/bZ2uB1/2
+      var argument = /<(\S*?)>/ig.exec(key);
+      // https://regex101.com/r/iG4fH2/2
+      var option = /[^\w][-]{1,2}([\w-_]*)/ig.exec(key);
+
+      if (argument) {
+        key = argument[1];
+        params.arguments[key] = value;
+      } else if (option) {
+        key = (key === '--') ? '__doubledash' : option[1];
+        params.options[key] = value;
+      } else {
+        params.commands[key] = value;
+      }
     }
     return params;
   }
@@ -142,10 +172,10 @@ export class CliRouter {
     if (!(opts.hasOwnProperty('default_params') && R.is(Object, opts.default_params))) {
       opts = { default_params: opts };
     }
-    var [cargs, params] = this.cleanArgs(args, opts.default_params);
+    var [cargs, params, normalized_params] = this.cleanArgs(args, opts.default_params);
     var route = this.find(args, opts.default_params);
 
-    opts = R.merge(opts, { args, params });
+    opts = R.merge(opts, { args, params, normalized_params });
     var fn = this.getFn(route, cargs, opts);
 
     if (R.is(Function, fn)) {
