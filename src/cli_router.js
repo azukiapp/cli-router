@@ -67,12 +67,7 @@ export class CliRouter {
 
     var fn;
     if (!R.isNil(route.controller)) {
-      // Force camelcase actions
-      var camelCases = (arr) => {
-        return R.map((action) => this._camelCase(action), arr || []);
-      };
-      var actions = R.unionWith((a, b) => a === b, camelCases(route.actions), camelCases(args.slice(1)));
-      actions = !R.isEmpty(actions) ? actions : ['index'];
+      var actions = this.parseActions(route.actions, args, params.default_params);
       route.actions = R.clone(actions);
 
       if (!route.hasOwnProperty('Controller')) {
@@ -97,6 +92,20 @@ export class CliRouter {
       fn = route.fn;
     }
     return fn;
+  }
+
+  parseActions(actions, args, params) {
+    var filter = (value) => {
+      return R.is(String, value) || (R.is(Array, value) && !R.isEmpty(value));
+    };
+    var values = R.filter(filter, R.uniq(R.flatten(R.values(params))));
+
+    args    = R.filter((arg) => !R.contains(arg)(values), args);
+    args    = this._camelCase(args.slice(1));
+    actions = this._camelCase(actions);
+    actions = R.unionWith((a, b) => a === b, actions, args);
+    actions = !R.isEmpty(actions) ? actions : ['index'];
+    return actions;
   }
 
   cleanArgs(args, default_params) {
@@ -160,6 +169,9 @@ export class CliRouter {
 
   // https://github.com/substack/camelize/blob/master/index.js#L17-L21
   _camelCase(str) {
+    if (R.is(Array, str)) {
+      return R.map((action) => this._camelCase(action), str);
+    }
     if (!R.isNil(str)) {
       str = str.replace(/[_.-](\w|$)/g, function (_, x) {
         return x.toUpperCase();
