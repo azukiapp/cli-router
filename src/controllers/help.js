@@ -72,8 +72,8 @@ class Help extends CliController {
     section = R.head(section) || '';
 
     var matches = R.map((pattern) => {
-      // https://regex101.com/r/tE2wV6/1
-      var regex = new RegExp(`^(  (?:.*,.*|)${pattern}(?:  |,).*)`, 'gmi');
+      // https://regex101.com/r/tE2wV6/2
+      var regex = new RegExp(`^(  (?:.*,.*|)${pattern}(?:  |[,=]).*)`, 'gmi');
       return section.match(regex);
     }, R.flatten([patterns]));
     matches = R.filter((v) => !R.isNil(v), R.flatten(matches));
