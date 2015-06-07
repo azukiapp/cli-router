@@ -5,6 +5,7 @@ import path from 'path';
 class Cli extends RootCli {
   docopt(...args) {
     try {
+      args[0].help = false;
       return super.docopt(...args);
     } catch (e) {
       return e.message;
@@ -103,13 +104,20 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Options:'  , 'gi'));
   });
 
+  it("should run `shell --help` command", function() {
+    doc_opts.argv = ['shell', '--help'];
+    var result  = cli.run(doc_opts, controller_opts);
+
+    h.expect(result).to.match(RegExp('Usage:'    , 'gi'));
+    h.expect(result).to.match(RegExp('Arguments:', 'gi'));
+    h.expect(result).to.match(RegExp('Options:'  , 'gi'));
+  });
+
   it("should run `tmp --help` command", function() {
     doc_opts.argv = ['tmp', '--help'];
     var result  = cli.run(doc_opts, controller_opts);
 
     h.expect(result).to.match(RegExp('Usage:'    , 'gi'));
-    h.expect(result).to.match(RegExp('Actions:'  , 'gi'));
-    h.expect(result).to.match(RegExp('Arguments:', 'gi'));
-    h.expect(result).to.match(RegExp('Options:'  , 'gi'));
+    h.expect(result).to.not.match(RegExp('Options:'  , 'gi'));
   });
 });

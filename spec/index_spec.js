@@ -96,5 +96,14 @@ describe('Cli module', function() {
       h.expect(cli.routes[0].fn).to.deep.eql(undefined);
       h.expect(result).to.eql('agent start null');
     });
+
+    it('should -- and shell-args without system', function() {
+      doc_opts.argv = ['shell', '--', 'echo', 'test'];
+      var result  = cli.docopt(doc_opts, controller_opts);
+
+      h.expect(result).to.have.property('<system>', null);
+      h.expect(result).to.have.property('--', true);
+      h.expect(result).to.have.property('<shell-args>').deep.eql(['echo', 'test']);
+    });
   });
 });
