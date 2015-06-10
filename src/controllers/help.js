@@ -1,6 +1,6 @@
 import { CliController } from '../cli_controller';
 import R from 'ramda';
-import Docopt from 'Docopt';
+import Docopt from 'docopt';
 
 class Help extends CliController {
   get sections() {
