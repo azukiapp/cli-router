@@ -61,9 +61,9 @@ class Help extends CliController {
     usage = Docopt.formal_usage(usage);
     var pattern = Docopt.parse_pattern(usage, []);
     return {
-      actions  : R.pluck('name')(pattern.flat(Docopt.Command)),
-      arguments: R.map((o) => o.name.replace(this.param_regex, ''), pattern.flat(Docopt.Argument)),
-      options  : R.pluck('name')(pattern.flat(Docopt.Option  ))
+      actions  : R.uniq(R.pluck('name')(pattern.flat(Docopt.Command))),
+      arguments: R.uniq(R.map((o) => o.name.replace(this.param_regex, ''), pattern.flat(Docopt.Argument))),
+      options  : R.uniq(R.pluck('name')(pattern.flat(Docopt.Option  ))),
     };
   }
 

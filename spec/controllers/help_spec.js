@@ -94,6 +94,19 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Options:'  , 'gi'));
   });
 
+  it("check duplicate options to `help start` command", function() {
+    doc_opts.argv = ['help', 'start'];
+    var result  = cli.run(doc_opts, controller_opts);
+    var regex_log = RegExp('^  --log=<level>', 'gmi');
+    var match_log = result.match(regex_log);
+
+    var regex_open = RegExp('^  --open-with=<app>', 'gmi');
+    var match_open = result.match(regex_open);
+
+    h.expect(match_log).to.eql([ '  --log=<level>' ]);
+    h.expect(match_open).to.eql([ '  --open-with=<app>' ]);
+  });
+
   it("should run `vm --help` command", function() {
     doc_opts.argv = ['vm', '--help'];
     var result  = cli.run(doc_opts, controller_opts);
