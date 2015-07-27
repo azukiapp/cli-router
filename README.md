@@ -14,22 +14,84 @@ $ npm install --save cli-router
 
 Example of binary usage:
 
+- `./usage.txt`:
+
+```
+Hello Word
+
+Usage:
+  usage hello <name> [--help]
+  usage now [--help]
+  usage version
+  usage [--version | -h | --help]
+
+Options:
+  --help, -h  Show this help.
+  --version   Show version.
+```
+
+- `./hello`
+
 ```javascript
 #!/usr/bin/env node
-var path = require('path');
-
-var Cli = require('../lib/src').Cli;
-var cli = new Cli({ path: path.join(__dirname, 'usage.txt') });
-
-var result = cli.run({
-  argv: process.argv.slice(2),
-  version: '2.0'
-}, {
-  // ui: {},
-  cwd: process.cwd()
+var Cli = require('cli-router').Cli;
+var cli = new Cli({
+  // Caminho para o arquivo de usage (seguindo o padrão do docopt.
+  path: path.join(__dirname, `usage.txt`),
+  // Diretório onde estão os controladores
+  controllers_root: path.join(__dirname, "controllers")
 });
 
+cli
+  .route('help', function(p, args) { return p.help || p['--help'] || args.length <= 0 })
+  .route('version', function(p) { return p.version || p['--version'] })
+  .route('now', null, function() { return (new Date()).toString(); });
+  .route('hello');
+
+// passa os argumentos para o cli-router executar
+var result = cli.run({ argv: process.argv.slice(2) });
 console.log(result);
+```
+
+- `controllers/hello.js`
+
+```javascript
+// Used ES6 JS
+var CliController = require('cli-router').CliController;
+class Hello extends CliController {
+}
+
+module.exports = Hello;
+```
+
+- `controllers/help.js`
+
+```javascript
+// Used ES6 JS
+var chalk = require('chalk');
+var CliControllers = require('cli-router').CliControllers;
+
+class Help extends CliControllers.Help {
+  index(params, cli) {
+    var usage = super.index(params, cli);
+    usage = this.colorizeSections(params, usage);
+    console.log(usage);
+    return 0;
+  }
+
+  colorizeSections(params, usage) {
+    _.map(this.sections, (section) => {
+      var regex = new RegExp(`^(${section}:)`, 'gmi');
+      var match = regex.match(usage);
+      if (match) {
+        usage = usage.replace(regex, chalk.blue(`${match[1]}`));
+      }
+    });
+    return usage;
+  }
+}
+
+module.exports = Help;
 ```
 
 ## CONTRIBUTING
