@@ -6,7 +6,8 @@
   "scripts": {
     "start": "example/index.js",
     "deploy": "npm-deploy",
-    "build": "babel src --out-dir lib",
+    "build:watch": "yarn build -- --watch",
+    "build": "babel ./src -s --out-dir lib",
     "lint": "eslint src spec",
     "test": "mocha --compilers js:babel-core/register ./spec",
     "test:watch": "yarn test -- --watch"
@@ -29,7 +30,7 @@
   "homepage": "https://github.com/azukiapp/cli-router",
   "dependencies": {
     "docopt": "git+https://github.com/gullitmiranda/docopt.coffee.git#stable",
-    "ramda": "^0.14.0"
+    "ramda": "^0.24.1"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

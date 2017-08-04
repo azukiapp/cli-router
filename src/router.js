@@ -54,7 +54,12 @@ export class Router {
   }
 
   loadController(pathname) {
-    return require(path.join(this.controllers_root, pathname));
+    const file = path.join(this.controllers_root, pathname);
+    const Controller = require(file);
+    if (!R.is(Function, Controller) && Controller.hasOwnProperty('default')) {
+      return Controller.default;
+    }
+    return Controller;
   }
 
   getFn(route, args, params={}) {

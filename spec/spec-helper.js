@@ -18,7 +18,7 @@ var Helpers = {
 
   fixture_require_path(...fixture) {
     return path.resolve(
-      '.', 'lib', 'spec', 'fixtures', ...fixture
+      '.', 'spec', 'fixtures', ...fixture
     );
   },
 };

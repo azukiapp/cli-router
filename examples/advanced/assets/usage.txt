@@ -1,0 +1,18 @@
+$ hello [options] [*command]
+
+Usage:
+  hello say <name> [-h]
+  hello now [-h]
+  hello help [<command>]
+  hello [version | --version | -v ]
+
+Commands:
+  now  Show actual date and time
+  say  Say hello to user
+
+Options:
+  --help, -h  Show this help.
+  --version   Show version.
+
+Examples:
+  hello say David

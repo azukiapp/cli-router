@@ -6,7 +6,7 @@ import CliDefault, { Cli as CliVar } from '../src';
 import { Controller as CliControllerOriginal } from '../src/controller';
 import { CliController, Controller } from '../src';
 
-import { Help as HelpControllerOriginal } from '../src/controllers/help';
+import { default as HelpControllerOriginal } from '../src/controllers/help';
 import { HelpController } from '../src';
 
 import * as CliControllersOriginal from '../src/controllers';

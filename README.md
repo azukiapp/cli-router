@@ -14,92 +14,7 @@ $ npm install --save cli-router
 
 ## Usage
 
-Example of usage:
-
-- `./usage.txt`:
-
-```
-Hello Word
-
-Usage:
-  usage hello <name> [--help]
-  usage now [--help]
-  usage version
-  usage [--version | -h | --help]
-
-Options:
-  --help, -h  Show this help.
-  --version   Show version.
-```
-
-- `./hello`
-
-```javascript
-#!/usr/bin/env node
-// Used ES6 JS
-import { Cli } from 'cli-router';
-
-const cli = new Cli({
-  // Path for usage file (with docopt syntax)
-  path: path.join(__dirname, `usage.txt`),
-  // Folder for controllers
-  controllers_root: path.join(__dirname, "controllers")
-});
-
-// route(command, [filter: (params, args) => boolean], [controller: string | (params, cli) => string | number]): cli
-cli
-  .route('help', (p, args) => p.help || p['--help'] || args.length <= 0)
-  .route('version', (p) => p.version || p['--version'])
-  .route('now', null, () => (new Date()).toString());
-  .route('hello');
-
-// run cli-router with process args
-var result = cli.run({ argv: process.argv.slice(2) });
-console.log(result);
-```
-
-- `controllers/hello.js`
-
-```javascript
-// Used ES6 JS
-var CliController = require('cli-router').CliController;
-class Hello extends CliController {
-  index(params, _cli) {
-    return `Hello ${params['name']}`;
-  }
-}
-
-module.exports = Hello;
-```
-
-- `controllers/help.js`
-
-```javascript
-// Used ES6 JS
-var chalk = require('chalk');
-var CliControllers = require('cli-router').CliControllers;
-
-class Help extends CliControllers.Help {
-  index(params, cli) {
-    let usage = super.usage(params, cli);
-    console.log(this.colorizeSections(params, usage));
-    return 0;
-  }
-
-  colorizeSections(params, usage) {
-    _.map(this.sections, (section) => {
-      var regex = new RegExp(`^(${section}:)`, 'gmi');
-      var match = regex.match(usage);
-      if (match) {
-        usage = usage.replace(regex, chalk.blue(`${match[1]}`));
-      }
-    });
-    return usage;
-  }
-}
-
-module.exports = Help;
-```
+Check for examples in `./examples` folder;
 
 #### Tests
 
@@ -125,3 +40,11 @@ This should run the following steps:
   - Run tests with `npm test`
   - Upgrade version in `package.json`, commit and add tag
   - Publish package in npmjs.com
+
+## License
+
+"Azuki", "azk" and the Azuki logo are copyright (c) 2013-2017 Azuki Serviços de Internet LTDA.
+
+**azk** source code is released under Apache 2 License.
+
+Check LEGAL and LICENSE files for more information.

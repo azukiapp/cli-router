@@ -13,8 +13,10 @@ export default class Help extends Controller {
     if (R.is(String, cli.help)) {
       usage = R.clone(cli.help);
     }
+
     this.param_regex = cli.router.param_regex;
     var args = R.filter((arg) => arg !== 'help' && !arg.match(this.param_regex), this.args);
+
     var controller = R.head(args);
     if (controller) {
       usage = this.controllerUsage(controller, usage);
@@ -23,8 +25,11 @@ export default class Help extends Controller {
   }
 
   controllerUsage(controller, full_usage) {
-    var usage    = this.parseCommandUsage('usage', controller, full_usage);
+    var usage = this.parseCommandUsage('usage', controller, full_usage);
+
+    // not searched a usage show all
     if (R.isNil(usage)) { return full_usage; }
+
     var patterns = this.usagePatterns(controller, usage);
     var title    = this.parseCommandTitle(controller, full_usage);
 
@@ -89,8 +94,8 @@ export default class Help extends Controller {
   parseCommandUsage(section_name, controller, usage) {
     var section = Docopt.parse_section(section_name, usage);
     section = R.head(section) || '';
-    // https://regex101.com/r/tU9kK9/3
-    var regex = new RegExp(`^([^ ].*|  azk [\<\(]?${controller}.*)`, 'gmi');
+    // https://regex101.com/r/W8Hjq1/2
+    var regex = new RegExp(`^([^ ].*|  \\w{1,}\\s{1,}[\\<\\(]?${controller}.*)`, 'gmi');
     var match = section.match(regex);
     return R.is(Array, match) && match.length > 1 ? (match).join('\r\n') : null;
   }
