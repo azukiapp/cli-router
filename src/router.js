@@ -94,7 +94,9 @@ export class Router {
         return obj_to_call.run_action.apply(obj_to_call, [action, ...args]);
       };
     } else if (!R.isNil(route.fn)) {
-      fn = route.fn;
+      fn = (...args) => {
+        return route.fn.apply(params, args);
+      };
     }
     return fn;
   }
