@@ -1,6 +1,6 @@
 {
   "name": "cli-router",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "cli-router",
   "main": "lib/index.js",
   "scripts": {
