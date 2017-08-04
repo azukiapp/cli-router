@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "start": "example/index.js",
-    "deploy": "npm-deploy",
+    "deploy": "./bin/npm-deploy",
     "build:watch": "yarn build -- --watch",
     "build": "babel ./src -s --out-dir lib",
     "lint": "eslint src spec",
