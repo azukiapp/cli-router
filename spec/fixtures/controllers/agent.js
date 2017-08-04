@@ -1,12 +1,12 @@
-import { CliController } from '../../../src/cli_controller';
+import { Controller } from '../../../src/controller';
 
-class SubAgent extends CliController {
+class SubAgent extends Controller {
   subcommand() {
     return 'subcommand';
   }
 }
 
-class Agent extends CliController {
+class Agent extends Controller {
   constructor(...args) {
     super(...args);
     this.subagent = new SubAgent();

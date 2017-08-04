@@ -1,61 +1,10 @@
-import { CliRouter } from './cli_router';
+import { Cli } from './cli';
+export { Cli };
+export default Cli;
 
-var fs     = require('fs');
-var R      = require('ramda');
-var Docopt = require('docopt');
+export { Router, Router as CliRouter } from './router';
+export { Controller, Controller as CliController } from './controller';
 
-export class Cli {
-  constructor(options) {
-    if (typeof options !== 'object') {
-      throw Error('Undefined or invalid `options`');
-    } else if (options.path) {
-      this.usage_doc = fs.readFileSync(options.path).toString();
-    } else if (!!options.usage_doc) {
-      this.usage_doc = options.usage_doc;
-    }
-
-    this.router   = new CliRouter(options.controllers_root || './controllers');
-    this._version = options.version;
-  }
-
-  get help() {
-    return this.usage_doc;
-  }
-
-  get version() {
-    return this._version;
-  }
-
-  set version(v) {
-    this._version = v;
-    return true;
-  }
-
-  docopt(opts = {}) {
-    opts.version = opts.version || this.version;
-    return Docopt.docopt(this.usage_doc, opts);
-  }
-
-  route(...args) {
-    this.router.add(...args);
-    return this;
-  }
-
-  get routes() {
-    return this.router.routes;
-  }
-
-  run(args, opts, obj) {
-    if (R.is(Array, args) || R.is(String, args)) {
-      args = { argv: args };
-    }
-    args.argv = R.flatten([ args.argv ]);
-    var result = this.docopt(args);
-    if (typeof result !== 'string') {
-      opts = R.merge(opts, { default_params: result });
-      result = this.router.run(args.argv, opts, (obj || this));
-    }
-
-    return result;
-  }
-}
+import * as Controllers from './controllers';
+export { Help as HelpController } from './controllers/help';
+export { Controllers, Controllers as CliControllers };

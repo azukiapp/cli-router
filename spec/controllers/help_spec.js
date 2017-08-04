@@ -13,7 +13,7 @@ class Cli extends RootCli {
   }
 }
 
-describe('CliControllers Help', function() {
+describe('Controller Help', function() {
   var cli_options = {
     path: h.fixture_path('usage_full.txt'),
     controllers_root: path.resolve('.', 'lib', 'src', 'controllers')
@@ -28,7 +28,7 @@ describe('CliControllers Help', function() {
 
   var doc_opts    = { exit: false };
 
-  it("should run help command", function() {
+  it('should run help command', function() {
     doc_opts.argv = 'help';
     var options = cli.docopt(doc_opts);
     var result  = cli.run(doc_opts, controller_opts);
@@ -37,14 +37,14 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Usage:', 'gi'));
   });
 
-  it("should run --help command", function() {
+  it('should run --help command', function() {
     doc_opts.argv = ['--help'];
     var result  = cli.run(doc_opts, controller_opts);
 
     h.expect(result).to.match(RegExp('Usage:', 'gi'));
   });
 
-  it("should run -h command", function() {
+  it('should run -h command', function() {
     doc_opts.argv = '-h';
     var result  = cli.run(doc_opts, controller_opts);
 
@@ -56,7 +56,7 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Examples:' , 'gi'));
   });
 
-  it("should run `agent --help` command", function() {
+  it('should run `agent --help` command', function() {
     doc_opts.argv = ['agent', '--help'];
     var result  = cli.run(doc_opts, controller_opts);
 
@@ -66,7 +66,7 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Examples:' , 'gi'));
   });
 
-  it("should run `help agent` command", function() {
+  it('should run `help agent` command', function() {
     doc_opts.argv = ['help', 'agent'];
     var result  = cli.run(doc_opts, controller_opts);
 
@@ -76,7 +76,7 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Examples:' , 'gi'));
   });
 
-  it("should run `start --help` command", function() {
+  it('should run `start --help` command', function() {
     doc_opts.argv = ['start', '--help'];
     var result  = cli.run(doc_opts, controller_opts);
 
@@ -85,7 +85,7 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Options:'  , 'gi'));
   });
 
-  it("should run `help start` command", function() {
+  it('should run `help start` command', function() {
     doc_opts.argv = ['help', 'start'];
     var result  = cli.run(doc_opts, controller_opts);
 
@@ -94,20 +94,20 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Options:'  , 'gi'));
   });
 
-  it("check duplicate options to `help start` command", function() {
+  it('check duplicate options to `help start` command', function() {
     doc_opts.argv = ['help', 'start'];
     var result  = cli.run(doc_opts, controller_opts);
-    var regex_log = RegExp('^  --log=<level>', 'gmi');
+    var regex_log = RegExp('^ {2}--log=<level>', 'gmi');
     var match_log = result.match(regex_log);
 
-    var regex_open = RegExp('^  --open-with=<app>', 'gmi');
+    var regex_open = RegExp('^ {2}--open-with=<app>', 'gmi');
     var match_open = result.match(regex_open);
 
     h.expect(match_log).to.eql([ '  --log=<level>' ]);
     h.expect(match_open).to.eql([ '  --open-with=<app>' ]);
   });
 
-  it("should run `vm --help` command", function() {
+  it('should run `vm --help` command', function() {
     doc_opts.argv = ['vm', '--help'];
     var result  = cli.run(doc_opts, controller_opts);
 
@@ -117,7 +117,7 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Options:'  , 'gi'));
   });
 
-  it("should run `shell --help` command", function() {
+  it('should run `shell --help` command', function() {
     doc_opts.argv = ['shell', '--help'];
     var result  = cli.run(doc_opts, controller_opts);
 
@@ -126,7 +126,7 @@ describe('CliControllers Help', function() {
     h.expect(result).to.match(RegExp('Options:'  , 'gi'));
   });
 
-  it("should run `tmp --help` command", function() {
+  it('should run `tmp --help` command', function() {
     doc_opts.argv = ['tmp', '--help'];
     var result  = cli.run(doc_opts, controller_opts);
 

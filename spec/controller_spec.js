@@ -1,10 +1,10 @@
 import h from './spec-helper';
 
-import { CliController } from '../src/cli_controller';
+import { Controller } from '../src/controller';
 
-describe('CliController module', function() {
-  it("should call hooks before and after run action", function() {
-    class BeforeAndAfterController extends CliController {
+describe('Controller module', function() {
+  it('should call hooks before and after run action', function() {
+    class BeforeAndAfterController extends Controller {
       index(args) {
         return args[0];
       }

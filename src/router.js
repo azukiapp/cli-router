@@ -1,7 +1,7 @@
-var R    = require('ramda');
-var path = require('path');
+import R from 'ramda';
+import path from 'path';
 
-export class CliRouter {
+export class Router {
   constructor(controllers_root) {
     this.controllers_root = controllers_root || './';
 

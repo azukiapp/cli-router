@@ -1,6 +1,7 @@
 Cli Router help
 
 Usage:
+  cli_router [now]
   cli_router [help | -h | --help]
   cli_router [-v | --version]
 

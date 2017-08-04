@@ -1,6 +1,6 @@
-var R    = require('ramda');
+import R from 'ramda';
 
-export class CliController {
+export class Controller {
   constructor(opts = {}) {
     Object.keys(opts).forEach((key) => {
       if (opts.hasOwnProperty(key)) {
@@ -10,7 +10,7 @@ export class CliController {
   }
 
   index() {
-    throw new Error("Don't use CliController directly, implemente the index action.");
+    throw new Error('Don\'t use Controller directly, implemente the index action.');
   }
 
   run_action(action_name, ...args) {

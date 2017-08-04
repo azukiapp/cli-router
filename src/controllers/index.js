@@ -1,1 +1,1 @@
-exports.Help = require('./help');
+export { default as Help } from './help';

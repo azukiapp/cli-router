@@ -1,6 +1,6 @@
-import { CliController } from '../../../src/cli_controller';
+import { Controller } from '../../../src/controller';
 
-class VM extends CliController {
+class VM extends Controller {
   ssh(params={}) {
     return params['ssh-options'].join(' ');
   }

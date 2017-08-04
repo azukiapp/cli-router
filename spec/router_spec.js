@@ -1,15 +1,15 @@
 import h from './spec-helper';
-import { CliRouter } from '../src/cli_router';
+import { Router } from '../src/router';
 
 var path = require('path');
 
-describe('CliRouter module', function() {
+describe('Router module', function() {
   var controllers_root = h.fixture_require_path('controllers');
   var controller_opts = {
     cwd: process.cwd()
   };
 
-  var cli_router = new CliRouter(controllers_root)
+  var cli_router = new Router(controllers_root)
     .add('help', (p) => p.help || p['--help'])
     .add('agent_start', (p, args) => p.agent && args[1] === 'start', 'agent.start')
     .add('agent')

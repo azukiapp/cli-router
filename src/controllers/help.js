@@ -1,13 +1,13 @@
-import { CliController } from '../cli_controller';
+import { Controller } from '../controller';
 import R from 'ramda';
 import Docopt from 'docopt';
 
-class Help extends CliController {
+export default class Help extends Controller {
   get sections() {
     return ['usage', 'commands', 'actions', 'arguments', 'options', 'examples'];
   }
 
-  index(params, cli) {
+  usage(params, cli) {
     var usage = '';
     if (!R.is(Object, cli)) { return 1; }
     if (R.is(String, cli.help)) {
@@ -95,5 +95,3 @@ class Help extends CliController {
     return R.is(Array, match) && match.length > 1 ? (match).join('\r\n') : null;
   }
 }
-
-module.exports = Help;

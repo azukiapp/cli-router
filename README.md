@@ -7,12 +7,14 @@ A simple Cli router to Controllers
 ## Install with [npm](https://www.npmjs.com/package/cli-router)
 
 ```shell
+$ yarn add cli-router
+# or
 $ npm install --save cli-router
 ```
 
 ## Usage
 
-Example of binary usage:
+Example of usage:
 
 - `./usage.txt`:
 
@@ -34,21 +36,24 @@ Options:
 
 ```javascript
 #!/usr/bin/env node
-var Cli = require('cli-router').Cli;
-var cli = new Cli({
-  // Caminho para o arquivo de usage (seguindo o padrão do docopt.
+// Used ES6 JS
+import { Cli } from 'cli-router';
+
+const cli = new Cli({
+  // Path for usage file (with docopt syntax)
   path: path.join(__dirname, `usage.txt`),
-  // Diretório onde estão os controladores
+  // Folder for controllers
   controllers_root: path.join(__dirname, "controllers")
 });
 
+// route(command, [filter: (params, args) => boolean], [controller: string | (params, cli) => string | number]): cli
 cli
-  .route('help', function(p, args) { return p.help || p['--help'] || args.length <= 0 })
-  .route('version', function(p) { return p.version || p['--version'] })
-  .route('now', null, function() { return (new Date()).toString(); });
+  .route('help', (p, args) => p.help || p['--help'] || args.length <= 0)
+  .route('version', (p) => p.version || p['--version'])
+  .route('now', null, () => (new Date()).toString());
   .route('hello');
 
-// passa os argumentos para o cli-router executar
+// run cli-router with process args
 var result = cli.run({ argv: process.argv.slice(2) });
 console.log(result);
 ```
@@ -59,6 +64,9 @@ console.log(result);
 // Used ES6 JS
 var CliController = require('cli-router').CliController;
 class Hello extends CliController {
+  index(params, _cli) {
+    return `Hello ${params['name']}`;
+  }
 }
 
 module.exports = Hello;
@@ -73,9 +81,8 @@ var CliControllers = require('cli-router').CliControllers;
 
 class Help extends CliControllers.Help {
   index(params, cli) {
-    var usage = super.index(params, cli);
-    usage = this.colorizeSections(params, usage);
-    console.log(usage);
+    let usage = super.usage(params, cli);
+    console.log(this.colorizeSections(params, usage));
     return 0;
   }
 
@@ -94,45 +101,15 @@ class Help extends CliControllers.Help {
 module.exports = Help;
 ```
 
-## CONTRIBUTING
-
-- Install/Update dependencies:
-
-    ```shell
-    $ npm install --save-dev azk-dev
-    $ gulp editor:config
-    $ gulp babel:runtime:install
-    $ npm install
-    ```
-
-- Commit
-
-    ```shell
-    $ git add .
-    $ git commit -m 'Updated azk-dev.'
-    ```
-
-## azk-dev
-
-Show all gulp tasks:
-
-```shell
-$ gulp help
-```
-
 #### Tests
 
 ```shell
-# default (lint + test, no watch)
-$ gulp lint test
+# only test
+$ yarn test
 
-# test + lint + watch
-$ gulp watch:lint:test
-
-# test + watch (no-lint)
-$ gulp watch:test
+# test watch
+$ yarn test:watch
 ```
-
 
 #### Deploy npm package
 

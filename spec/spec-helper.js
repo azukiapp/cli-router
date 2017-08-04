@@ -1,7 +1,14 @@
-var path = require('path');
+import path from 'path';
+import chai from 'chai';
+
+// Chai extensions
+chai.use(require('chai-subset'));
+chai.use(require('chai-as-promised'));
+chai.use(require('chai-things'));
+chai.config.includeStack = true;
 
 var Helpers = {
-  expect : require('azk-dev/chai').expect,
+  expect : chai.expect,
 
   fixture_path(...fixture) {
     return path.resolve(
@@ -17,3 +24,4 @@ var Helpers = {
 };
 
 export default Helpers;
+export { chai };
